@@ -1,0 +1,7 @@
+### Delete a message with ID 123456789
+DELETE http://localhost:3000/api/messages/123456789
+Accept: application/json
+
+### Delete a message with ID 987654321
+DELETE http://localhost:3000/api/messages/987654321
+Accept: application/json

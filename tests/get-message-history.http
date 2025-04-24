@@ -1,0 +1,7 @@
+### Get message history between user1 and admin1
+GET http://localhost:3000/api/messages/15/-1
+Accept: application/json
+
+### Get message history between user2 and admin1
+GET http://localhost:3000/api/messages/-1/15
+Accept: application/json

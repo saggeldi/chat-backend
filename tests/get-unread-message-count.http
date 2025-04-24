@@ -1,0 +1,7 @@
+### Get unread message count for user1
+GET http://localhost:3000/api/messages/unread/15
+Accept: application/json
+
+### Get unread message count for admin1
+GET http://localhost:3000/api/messages/unread/-1
+Accept: application/json

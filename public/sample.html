@@ -1,0 +1,866 @@
+<!DOCTYPE html>
+<html lang="ru"> <!-- Changed language to Russian -->
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Приложение чата</title> <!-- Translated Title -->
+    <style>
+        /* --- Theme Variables --- */
+        :root {
+            --bg-color: #f0f2f5; /* Light mode background */
+            --container-bg: #ffffff;
+            --text-color: #333333;
+            --text-color-secondary: #666666;
+            --input-bg: #ffffff;
+            --input-border: #d1d7e0;
+            --input-focus-border: #007bff;
+            --button-primary-bg: #007bff;
+            --button-primary-hover-bg: #0056b3;
+            --button-secondary-bg: #6c757d;
+            --button-secondary-hover-bg: #5a6268;
+            --button-text-color: #ffffff;
+            --message-sent-bg: #dcf8c6;
+            --message-sent-text: #303030;
+            --message-received-bg: #ffffff;
+            --message-received-text: #303030;
+            --chat-messages-bg: #e5ddd5; /* Subtle pattern or color */
+            --border-color: #e0e0e0;
+            --shadow-color: rgba(0, 0, 0, 0.1);
+            --status-connected-color: #28a745;
+            --status-disconnected-color: #dc3545;
+            --link-color: #007bff;
+
+            --border-radius: 8px;
+            --padding-base: 1rem; /* 16px */
+            --padding-small: 0.5rem; /* 8px */
+        }
+
+        body.dark-mode {
+            --bg-color: #121212;
+            --container-bg: #1e1e1e;
+            --text-color: #e0e0e0;
+            --text-color-secondary: #a0a0a0;
+            --input-bg: #2c2c2c;
+            --input-border: #444444;
+            --input-focus-border: #4dabf7;
+            --button-primary-bg: #4dabf7;
+            --button-primary-hover-bg: #2196f3;
+            --button-secondary-bg: #555555;
+            --button-secondary-hover-bg: #666666;
+            --button-text-color: #ffffff;
+            --message-sent-bg: #056162; /* Darker green for sent messages */
+            --message-sent-text: #e0e0e0;
+            --message-received-bg: #2c2c2c; /* Darker bg for received */
+            --message-received-text: #e0e0e0;
+            --chat-messages-bg: #0a1014; /* Dark chat background */
+            --border-color: #333333;
+            --shadow-color: rgba(255, 255, 255, 0.1);
+            --status-connected-color: #4caf50;
+            --status-disconnected-color: #f44336;
+            --link-color: #4dabf7;
+        }
+
+        /* --- Base Styles --- */
+        *, *::before, *::after {
+            box-sizing: border-box;
+        }
+
+        html {
+            height: 100%;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            margin: 0;
+            padding: 0; /* Remove default padding */
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            display: flex; /* Use flexbox for centering */
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh; /* Ensure body takes full viewport height */
+            transition: background-color 0.3s ease, color 0.3s ease;
+        }
+
+        /* --- Container --- */
+        .container {
+            width: 100%;
+            max-width: 800px; /* Limit max width on large screens */
+            height: 90vh; /* Limit height on large screens */
+            max-height: 700px; /* Max height overall */
+            margin: 1rem; /* Add some margin on smaller screens */
+            background-color: var(--container-bg);
+            border-radius: var(--border-radius);
+            box-shadow: 0 4px 15px var(--shadow-color);
+            padding: var(--padding-base);
+            display: flex;
+            flex-direction: column;
+            overflow: hidden; /* Prevent content overflow */
+            transition: background-color 0.3s ease;
+        }
+
+        h1 {
+            text-align: center;
+            color: var(--text-color);
+            margin-top: 0;
+            margin-bottom: var(--padding-base);
+            font-size: 1.5rem; /* 24px */
+        }
+
+        /* --- User Info --- */
+        .user-info {
+            display: flex;
+            gap: var(--padding-small);
+            margin-bottom: var(--padding-base);
+        }
+
+        .user-info input {
+            flex: 1; /* Share space equally */
+            padding: var(--padding-small) calc(var(--padding-small) * 1.5);
+            border: 1px solid var(--input-border);
+            border-radius: var(--border-radius);
+            background-color: var(--input-bg);
+            color: var(--text-color);
+            font-size: 0.9rem;
+            transition: border-color 0.3s ease, background-color 0.3s ease;
+        }
+        .user-info input:focus {
+            outline: none;
+            border-color: var(--input-focus-border);
+            box-shadow: 0 0 0 2px rgba(0, 123, 255, 0.25); /* Focus ring */
+        }
+        body.dark-mode .user-info input:focus {
+            box-shadow: 0 0 0 2px rgba(77, 171, 247, 0.25); /* Dark mode focus ring */
+        }
+
+
+        /* --- Chat Area --- */
+        .chat-container {
+            flex: 1; /* Grow to fill available space */
+            display: flex;
+            flex-direction: column;
+            border: 1px solid var(--border-color);
+            border-radius: var(--border-radius);
+            overflow: hidden; /* Important for child elements */
+            background-color: var(--chat-messages-bg);
+            transition: border-color 0.3s ease, background-color 0.3s ease;
+        }
+
+        /* --- Chat Messages --- */
+        .chat-messages {
+            flex: 1; /* Allow messages to take up space and scroll */
+            overflow-y: auto;
+            padding: var(--padding-base);
+            display: flex;
+            flex-direction: column;
+            gap: var(--padding-small);
+            /* Added for smooth scroll behavior */
+            scroll-behavior: smooth;
+        }
+        /* Scrollbar styling (optional, webkit specific) */
+        .chat-messages::-webkit-scrollbar {
+            width: 8px;
+        }
+        .chat-messages::-webkit-scrollbar-track {
+            background: var(--bg-color);
+            border-radius: 4px;
+        }
+        .chat-messages::-webkit-scrollbar-thumb {
+            background-color: var(--text-color-secondary);
+            border-radius: 4px;
+            border: 2px solid var(--bg-color);
+        }
+        body.dark-mode .chat-messages::-webkit-scrollbar-thumb {
+            background-color: var(--text-color-secondary);
+            border: 2px solid var(--bg-color);
+        }
+
+
+        /* --- Individual Messages --- */
+        .message {
+            padding: var(--padding-small) calc(var(--padding-small) * 1.5);
+            border-radius: var(--border-radius);
+            max-width: 75%;
+            word-wrap: break-word;
+            box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+            transition: background-color 0.3s ease;
+        }
+
+        .message.sent {
+            background-color: var(--message-sent-bg);
+            color: var(--message-sent-text);
+            align-self: flex-end;
+            border-bottom-right-radius: 2px; /* Slight 'tail' effect */
+        }
+
+        .message.received {
+            background-color: var(--message-received-bg);
+            color: var(--message-received-text);
+            align-self: flex-start;
+            border-bottom-left-radius: 2px; /* Slight 'tail' effect */
+        }
+
+        .message-info {
+            font-size: 0.75rem; /* 12px */
+            color: var(--text-color-secondary);
+            margin-bottom: 4px;
+            opacity: 0.8;
+        }
+        .message.sent .message-info { /* Slightly adjust color for sent messages */
+            color: hsla(var(--message-sent-text), 0.7);
+            opacity: 0.9;
+        }
+
+        .message-content {
+            font-size: 0.95rem; /* 15px */
+            line-height: 1.4;
+        }
+        .message-content img {
+            max-width: 100%;
+            height: auto;
+            border-radius: calc(var(--border-radius) / 2);
+            margin-top: var(--padding-small);
+        }
+        .message-content a {
+            color: var(--link-color);
+            text-decoration: none;
+            word-break: break-all; /* Prevent long links from breaking layout */
+        }
+        .message-content a:hover {
+            text-decoration: underline;
+        }
+
+
+        /* --- Chat Input Area --- */
+        .chat-input {
+            display: flex;
+            align-items: center; /* Vertically align items */
+            padding: var(--padding-small) var(--padding-base);
+            background-color: var(--container-bg); /* Match container bg */
+            border-top: 1px solid var(--border-color);
+            transition: background-color 0.3s ease, border-color 0.3s ease;
+        }
+
+        .chat-input input[type="text"] {
+            flex: 1;
+            padding: var(--padding-small) calc(var(--padding-small) * 1.5);
+            border: 1px solid var(--input-border);
+            border-radius: var(--border-radius);
+            background-color: var(--input-bg);
+            color: var(--text-color);
+            font-size: 0.9rem;
+            margin-right: var(--padding-small);
+            transition: border-color 0.3s ease, background-color 0.3s ease;
+        }
+        .chat-input input[type="text"]:focus {
+            outline: none;
+            border-color: var(--input-focus-border);
+            box-shadow: 0 0 0 2px rgba(0, 123, 255, 0.25);
+        }
+        body.dark-mode .chat-input input[type="text"]:focus {
+            box-shadow: 0 0 0 2px rgba(77, 171, 247, 0.25);
+        }
+
+        .chat-input button {
+            padding: var(--padding-small) calc(var(--padding-small) * 2);
+            background-color: var(--button-primary-bg);
+            color: var(--button-text-color);
+            border: none;
+            border-radius: var(--border-radius);
+            cursor: pointer;
+            font-size: 0.9rem;
+            font-weight: 500;
+            transition: background-color 0.2s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        /* Send icon (Unicode) */
+        .chat-input button::after {
+            content: ' ➤'; /* Simple arrow */
+            margin-left: 4px;
+            font-size: 1.1em;
+        }
+
+        .chat-input button:hover {
+            background-color: var(--button-primary-hover-bg);
+        }
+
+        /* --- File Input Area --- */
+        .file-input {
+            display: flex;
+            margin-top: var(--padding-base);
+            gap: var(--padding-small);
+            align-items: center;
+        }
+        /* Style the file input itself (trickier) */
+        .file-input input[type="file"] {
+            flex: 1;
+            color: var(--text-color-secondary); /* Placeholder-like color */
+            font-size: 0.85rem;
+            /* Basic styling, browser differences are significant */
+        }
+        .file-input input[type="file"]::file-selector-button {
+            padding: calc(var(--padding-small) / 2) var(--padding-small);
+            margin-right: var(--padding-small);
+            border: 1px solid var(--input-border);
+            border-radius: calc(var(--border-radius) / 2);
+            background-color: var(--input-bg);
+            color: var(--text-color);
+            cursor: pointer;
+            transition: background-color 0.2s ease;
+        }
+        .file-input input[type="file"]::file-selector-button:hover {
+            background-color: var(--bg-color);
+        }
+        body.dark-mode .file-input input[type="file"]::file-selector-button {
+            background-color: var(--input-bg);
+            border-color: var(--input-border);
+            color: var(--text-color);
+        }
+        body.dark-mode .file-input input[type="file"]::file-selector-button:hover {
+            background-color: #3a3a3a;
+        }
+
+
+        .file-input button {
+            padding: var(--padding-small) calc(var(--padding-small) * 2);
+            background-color: var(--button-secondary-bg);
+            color: var(--button-text-color);
+            border: none;
+            border-radius: var(--border-radius);
+            cursor: pointer;
+            font-size: 0.9rem;
+            font-weight: 500;
+            transition: background-color 0.2s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        /* Attachment icon (Unicode) */
+        .file-input button::before {
+            content: '📎'; /* Clip */
+            margin-right: 4px;
+            font-size: 1.1em;
+        }
+
+
+        .file-input button:hover {
+            background-color: var(--button-secondary-hover-bg);
+        }
+
+        /* --- Status --- */
+        .status {
+            text-align: center;
+            margin-top: var(--padding-base);
+            font-size: 0.85rem;
+            color: var(--text-color-secondary);
+        }
+        .status.connected {
+            color: var(--status-connected-color);
+            font-weight: 500;
+        }
+        .status.disconnected {
+            color: var(--status-disconnected-color);
+            font-weight: 500;
+        }
+
+        /* --- Responsive Adjustments --- */
+        @media (max-width: 768px) {
+            body {
+                align-items: flex-start; /* Align container to top on mobile */
+                padding: 0;
+            }
+            .container {
+                width: 100%;
+                height: 100vh; /* Full height on mobile */
+                max-height: none; /* Remove max height */
+                margin: 0;
+                border-radius: 0; /* No border radius on full screen */
+                padding: var(--padding-small);
+                box-shadow: none;
+            }
+            h1 {
+                font-size: 1.25rem; /* 20px */
+                margin-bottom: var(--padding-small);
+            }
+            .user-info {
+                flex-direction: column; /* Stack inputs vertically */
+                gap: calc(var(--padding-small) / 2);
+                margin-bottom: var(--padding-small);
+            }
+            .user-info input {
+                width: 100%; /* Full width inputs */
+            }
+            .chat-container {
+                border-left: none;
+                border-right: none;
+                border-radius: 0; /* Remove border radius inside container */
+            }
+            .chat-messages {
+                padding: var(--padding-small);
+            }
+            .message {
+                max-width: 85%; /* Allow slightly wider messages */
+            }
+
+            .chat-input {
+                padding: var(--padding-small);
+            }
+            .chat-input button span { /* Hide text on small screens if needed */
+                /* display: none; */
+            }
+            .file-input {
+                margin-top: var(--padding-small);
+                flex-direction: column; /* Stack file input below button */
+                align-items: stretch; /* Make children full width */
+            }
+            .file-input input[type="file"] {
+                margin-bottom: calc(var(--padding-small) / 2);
+            }
+            .status {
+                margin-top: var(--padding-small);
+            }
+        }
+
+    </style>
+    <script>
+        // Theme Switcher - Run this early!
+        (function() {
+            const urlParams = new URLSearchParams(window.location.search);
+            const isDark = urlParams.get('isDark');
+            if (isDark === 'true' || isDark === '1') {
+                document.documentElement.classList.add('dark-mode'); // Add to html
+                document.body.classList.add('dark-mode'); // Also add to body if needed by CSS
+            }
+            // Optionally, store preference in localStorage and check that too
+        })();
+    </script>
+</head>
+<body>
+<div class="container">
+    <h1>Чат</h1> <!-- Translated -->
+
+    <div class="chat-container">
+        <div class="chat-messages" id="messages">
+            <!-- Example Messages (for styling preview) -->
+            <!--
+            <div class="message received">
+                <div class="message-info">Получатель - 10:30 AM</div>
+                <div class="message-content">Здравствуйте! Чем могу помочь?</div>
+            </div>
+            <div class="message sent">
+                <div class="message-info">Вы - 10:31 AM</div>
+                <div class="message-content">Привет! У меня вопрос по моему заказу.</div>
+            </div>
+            <div class="message received">
+               <div class="message-info">Получатель - 10:32 AM</div>
+               <div class="message-content">
+                   Конечно, какой номер заказа?
+                   <img src="https://via.placeholder.com/150" alt="Placeholder image">
+                </div>
+           </div>
+            <div class="message sent">
+               <div class="message-info">Вы - 10:33 AM</div>
+               <div class="message-content">
+                   Вот файл, который вы просили.
+                   <a href="#" download>Скачать Документ.pdf</a>
+               </div>
+           </div>
+            -->
+        </div>
+        <div class="chat-input">
+            <input type="text" id="message-input" placeholder="Введите сообщение..." aria-label="Введите сообщение"> <!-- Translated -->
+            <button id="send-button" aria-label="Отправить сообщение"><span>Отправить</span></button> <!-- Translated -->
+        </div>
+    </div>
+
+    <div class="file-input">
+        <input type="file" id="file-input" aria-label="Выберите файл для отправки"> <!-- Translated -->
+        <button id="send-file-button" aria-label="Отправить выбранный файл"><span>Отправить файл</span></button> <!-- Translated -->
+    </div>
+
+    <div class="status disconnected" id="connection-status">Отключено</div> <!-- Translated -->
+</div>
+
+<!-- Socket.IO client library (ensure this path is correct for your setup) -->
+<script src="./socket.io.min.js"></script>
+
+<script>
+    // Parse URL query parameters
+    function getQueryParam(param) {
+        const urlParams = new URLSearchParams(window.location.search);
+        return urlParams.get(param);
+    }
+
+    // DOM Elements
+    const messageInput = document.getElementById('message-input');
+    const sendButton = document.getElementById('send-button');
+    const messagesContainer = document.getElementById('messages');
+    const connectionStatus = document.getElementById('connection-status');
+    const fileInput = document.getElementById('file-input');
+    const sendFileButton = document.getElementById('send-file-button');
+
+    // Set sender and receiver IDs from URL query parameters if available
+    const senderIdFromUrl = getQueryParam('room_id');
+    const receiverIdFromUrl = getQueryParam('receiverId')??"-1";
+    const isDarkFromUrl = getQueryParam('theme'); // Get dark mode param
+
+    // Apply dark mode class based on URL param (redundant if head script works, but safe)
+    if (isDarkFromUrl === 'dark' || isDarkFromUrl === 'true') {
+        document.body.classList.add('dark-mode');
+    }
+
+    // Socket.IO connection setup
+    let socket;
+
+    // Function to identify user to the server
+    function identifyUser(userId) {
+        if (!socket) {
+            console.warn('Socket not initialized yet, cannot identify user');
+            return;
+        }
+        console.log('Идентификация пользователя:', userId); // Translated console log
+        socket.emit('identify', {
+            userId: userId,
+            role: 'user' // Assuming 'user' role, adjust if needed
+        });
+    }
+
+    // Function to fetch message history
+    function fetchMessageHistory(userId, otherUserId) {
+        if (!messagesContainer) {
+            console.warn('Messages container not initialized yet');
+            return;
+        }
+
+        console.log(`Загрузка истории между ${userId} и ${otherUserId}`); // Translated console log
+        // Ensure IDs are provided
+        if (!userId || !otherUserId) {
+            console.log("Пропуск загрузки истории: ID отсутствуют"); // Translated console log
+            messagesContainer.innerHTML = '<div style="text-align: center; color: var(--text-color-secondary); padding: 1rem;">Введите ID обоих пользователей, чтобы увидеть историю чата.</div>'; // Translated
+            return;
+        }
+
+        messagesContainer.innerHTML = '<div style="text-align: center; color: var(--text-color-secondary); padding: 1rem;">Загрузка истории...</div>'; // Translated Loading indicator
+
+        fetch(`/api/messages/${userId}/${otherUserId}`) // Ensure endpoint is correct
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error(`HTTP ошибка! статус: ${response.status}`); // Translated
+                }
+                return response.json();
+            })
+            .then(messages => {
+                console.log('История получена:', messages); // Translated console log
+                messagesContainer.innerHTML = ''; // Clear loading/previous messages
+
+                if (!Array.isArray(messages) || messages.length === 0) {
+                    messagesContainer.innerHTML = '<div style="text-align: center; color: var(--text-color-secondary); padding: 1rem;">Сообщений пока нет. Начните общение!</div>'; // Translated
+                    return;
+                }
+
+                // Display messages
+                messages.forEach(message => {
+                    const isSent = message.senderId === senderIdFromUrl;
+                    displayMessage(message, isSent);
+                });
+                // Scrolling is now handled within displayMessage
+                // Ensure the *very last* message scrolls into view if needed,
+                // though displayMessage handles it per message.
+                // messagesContainer.scrollTop = messagesContainer.scrollHeight; // Keep this if smooth scroll per message isn't enough
+            })
+            .catch(error => {
+                console.error('Ошибка загрузки истории сообщений:', error); // Translated console log
+                messagesContainer.innerHTML = `<div style="text-align: center; color: var(--status-disconnected-color); padding: 1rem;">Ошибка загрузки истории: ${error.message}</div>`; // Translated
+            });
+    }
+
+    // --- SCROLL TO BOTTOM FUNCTION ---
+    function scrollToBottom() {
+        if (messagesContainer) {
+            // Use smooth scrolling for better UX
+            messagesContainer.scrollTo({
+                top: messagesContainer.scrollHeight,
+                behavior: 'smooth'
+            });
+            // // Or use immediate scroll:
+            // messagesContainer.scrollTop = messagesContainer.scrollHeight;
+        }
+    }
+
+    // Function to display a message
+    function displayMessage(message, isSent) {
+        if (!messagesContainer) {
+            console.warn('Messages container not initialized yet');
+            return;
+        }
+
+        // Remove any "loading" or "no messages" placeholders
+        const placeholder = messagesContainer.querySelector('div[style*="text-align: center"]');
+        if (placeholder) {
+            placeholder.remove();
+        }
+
+        const messageElement = document.createElement('div');
+        messageElement.className = `message ${isSent ? 'sent' : 'received'}`;
+
+        const messageInfo = document.createElement('div');
+        messageInfo.className = 'message-info';
+        // Show 'Вы' for sent messages, senderId for received
+        const senderName = isSent ? 'Вы' : message.senderId; // Translated 'You'
+        const timeString = message.timestamp ? new Date(message.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : '';
+        messageInfo.textContent = `${senderName} - ${timeString}`;
+
+        const messageContent = document.createElement('div');
+        messageContent.className = 'message-content';
+
+        const contentType = message.mimeType || 'text/plain'; // Default to text
+
+        // Handle different content types
+        if (contentType.startsWith('image/')) {
+            // Display image
+            const img = document.createElement('img');
+            // Use the content field which should be the URL/path or data URL
+            img.src = message.content;
+            img.alt = 'Вложенное изображение'; // Translated alt text
+            img.style.maxWidth = '200px'; // Limit image preview size
+            img.style.cursor = 'pointer'; // Indicate it's clickable
+            img.onclick = () => window.open(message.content, '_blank'); // Open full image on click
+            messageContent.appendChild(img);
+        } else if (message.content.startsWith('/uploads/') || message.content.startsWith('data:')) {
+            // Handle other file types (non-image) as links
+            const link = document.createElement('a');
+            link.href = message.content;
+            // Try to extract filename, use generic name with type if failed
+            let filename = 'файл'; // Default translated 'file'
+            try {
+                const url = new URL(message.content, window.location.origin);
+                filename = url.pathname.split('/').pop() || filename;
+            } catch (e) { /* Ignore errors for data URLs etc. */ }
+            link.textContent = `Скачать ${filename} (${contentType.split('/')[1] || 'файл'})`; // Translated link text with dynamic name
+            link.download = filename; // Use extracted or default filename for download attribute
+            link.target = '_blank'; // Open in new tab
+            link.rel = 'noopener noreferrer'; // Security measure
+            messageContent.appendChild(link);
+
+        } else {
+            // Display plain text message
+            messageContent.textContent = message.content;
+        }
+
+        messageElement.appendChild(messageInfo);
+        messageElement.appendChild(messageContent);
+        messagesContainer.appendChild(messageElement);
+
+        // --- SCROLL TO BOTTOM ---
+        // Scroll to the bottom whenever a message is displayed
+        scrollToBottom();
+    }
+
+    // Initialize chat with URL parameters if available
+    function initializeChat() {
+        const senderId = senderIdFromUrl;
+        const receiverId = receiverIdFromUrl;
+
+        // Note: Identification and history fetching now happen on 'connect' event
+        // to ensure socket is ready.
+        if (!senderId || !receiverId) {
+            messagesContainer.innerHTML = '<div style="text-align: center; color: var(--text-color-secondary); padding: 1rem;">Введите ID отправителя и получателя в URL для начала чата.</div>'; // Translated prompt
+        }
+    }
+
+    // Call initialize after the page loads
+    window.addEventListener('load', () => {
+        // Initialize Socket.IO connection
+        socket = io();
+
+        // Connection events
+        socket.on('connect', () => {
+            console.log('Socket подключен'); // Translated
+            connectionStatus.textContent = 'Подключено'; // Translated
+            connectionStatus.className = 'status connected'; // Update class for styling
+
+            // Identify user *after* connection is established
+            const currentSenderId = senderIdFromUrl;
+            if (currentSenderId) {
+                identifyUser(currentSenderId);
+            }
+
+            // Get message history when connected (if receiver is also set)
+            const currentReceiverId = receiverIdFromUrl;
+            if (currentSenderId && currentReceiverId) {
+                fetchMessageHistory(currentSenderId, currentReceiverId);
+            } else if (currentSenderId && !currentReceiverId) {
+                messagesContainer.innerHTML = '<div style="text-align: center; color: var(--text-color-secondary); padding: 1rem;">Введите ID получателя в URL для загрузки истории и отправки сообщений.</div>'; // Translated
+            } else if (!currentSenderId && currentReceiverId) {
+                messagesContainer.innerHTML = '<div style="text-align: center; color: var(--text-color-secondary); padding: 1rem;">Введите ваш ID в URL для загрузки истории и отправки сообщений.</div>'; // Translated
+            } else {
+                messagesContainer.innerHTML = '<div style="text-align: center; color: var(--text-color-secondary); padding: 1rem;">Введите ваш ID и ID получателя в URL для начала чата.</div>'; // Translated
+            }
+        });
+
+        // Handle successful identification
+        socket.on('identified', (data) => {
+            console.log('Идентифицирован на сервере как пользователь:', data.userId); // Translated
+            // Optional: Update UI or state if needed upon identification
+        });
+
+        socket.on('disconnect', () => {
+            console.log('Socket отключен'); // Translated
+            connectionStatus.textContent = 'Отключено'; // Translated
+            connectionStatus.className = 'status disconnected'; // Update class for styling
+        });
+
+        // Message events
+        socket.on('new_message', (message) => {
+            console.log('Получено новое сообщение:', message); // Translated
+            // Ensure the message is for the current chat context
+            const currentSenderId = senderIdFromUrl;
+            const currentReceiverId = receiverIdFromUrl;
+            // Display if it's from the person we are chatting with OR if it's relevant some other way
+            if (message.senderId === currentReceiverId && message.receiverId === currentSenderId) {
+                displayMessage(message, false); // false = received
+            } else {
+                console.log('Получено сообщение не для текущего чата:', message); // Translated
+                // Optionally show a notification or handle differently
+            }
+        });
+
+        socket.on('message_sent', (message) => {
+            // This confirms *our* message was processed by the server.
+            // We already displayed it optimistically or can display it now.
+            console.log('Подтверждение отправки сообщения:', message); // Translated
+            // Display the message *now* if you didn't do it optimistically
+            // displayMessage(message, true); // true = sent
+        });
+
+        socket.on('error', (error) => {
+            console.error('Socket Ошибка:', error); // Translated
+            alert('Ошибка чата: ' + (error.message || error)); // Translated
+        });
+
+        // --- Send Functions ---
+
+        // Send text message function
+        function sendMessage() {
+            const senderId = senderIdFromUrl;
+            const receiverId = receiverIdFromUrl;
+            const content = messageInput.value.trim();
+
+            if (!senderId || !receiverId) {
+                alert('Пожалуйста, укажите ID отправителя и получателя в URL.'); // Translated
+                return;
+            }
+            if (!content) {
+                // Maybe just don't send empty messages silently
+                return;
+            }
+
+            const messageData = {
+                senderId,
+                receiverId,
+                content,
+                timestamp: new Date().toISOString(), // Add timestamp client-side for optimistic display
+                mimeType: 'text/plain' // Assuming text
+            };
+
+            // Optimistically display sent message
+            displayMessage(messageData, true); // true = sent
+            // Scrolling is handled within displayMessage
+
+            // Emit message to server
+            socket.emit('send_message', messageData);
+
+            // Clear input field
+            messageInput.value = '';
+            messageInput.focus(); // Keep focus on input
+        }
+
+        // Send file function
+        function sendFile() {
+            const senderId = senderIdFromUrl;
+            const receiverId = receiverIdFromUrl;
+            const file = fileInput.files[0];
+
+            if (!senderId || !receiverId) {
+                alert('Пожалуйста, укажите ID отправителя и получателя в URL.'); // Translated
+                return;
+            }
+            if (!file) {
+                alert('Пожалуйста, выберите файл для отправки.'); // Translated
+                return;
+            }
+
+            // Optional: Add file size check
+            // if (file.size > MAX_FILE_SIZE) {
+            //    alert('Файл слишком большой.'); // Translated
+            //    return;
+            // }
+
+            // Create FormData
+            const formData = new FormData();
+            formData.append('senderId', senderId);
+            formData.append('receiverId', receiverId);
+            formData.append('file', file);
+
+            // Show sending indicator (optional)
+            sendFileButton.disabled = true;
+            sendFileButton.querySelector('span').textContent = 'Отправка...'; // Translated
+
+
+            // Send file using fetch API to your backend endpoint
+            fetch('/api/messages/file', { // Make sure this endpoint is correct
+                method: 'POST',
+                body: formData
+                // No 'Content-Type' header needed for FormData with fetch
+            })
+                .then(response => {
+                    if (!response.ok) {
+                        // Try to get error message from response body
+                        return response.text().then(text => {
+                            throw new Error(`HTTP ошибка! статус: ${response.status}, сообщение: ${text || 'Неизвестная ошибка'}`); // Translated
+                        });
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    console.log('Файл успешно отправлен через API:', data); // Translated
+                    // The server should emit 'new_message' or 'message_sent' via Socket.IO
+                    // which will trigger displayMessage and scrolling.
+                })
+                .catch(error => {
+                    console.error('Ошибка отправки файла:', error); // Translated
+                    alert('Ошибка отправки файла: ' + error.message); // Translated
+                })
+                .finally(() => {
+                    // Clear file input and re-enable button
+                    fileInput.value = ''; // Clear the selected file
+                    sendFileButton.disabled = false;
+                    sendFileButton.querySelector('span').textContent = 'Отправить файл'; // Translated
+                });
+        }
+
+        // --- Event Listeners ---
+        sendButton.addEventListener('click', sendMessage);
+
+        messageInput.addEventListener('keypress', (event) => {
+            // Send on Enter key, but not Shift+Enter
+            if (event.key === 'Enter' && !event.shiftKey) {
+                event.preventDefault(); // Prevent default form submission/newline
+                sendMessage();
+            }
+        });
+
+        sendFileButton.addEventListener('click', sendFile);
+
+        // No separate handler needed for ID change, logic moved to 'connect'
+
+        // Initial setup on load (basic check, main setup in 'connect')
+        initializeChat();
+
+    }); // End of 'load' event listener
+
+</script>
+</body>
+</html>
