@@ -8,11 +8,13 @@ import { SendMessageUseCase } from './application/use-cases/send-message.use-cas
 import { User } from './domain/entities/message.entity.mjs';
 import { initializeTypeORM } from './infrastructure/database/typeorm/typeorm.config.mjs';
 import { createMessageRouter } from './presentation/rest/message.router.mjs';
+import cors from 'cors';
 
 const app = express();
 const server = http.createServer(app);
 
 // Middleware
+app.use(cors());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(express.static('public'));
@@ -62,6 +64,8 @@ initializeTypeORM(container)
         console.error('Failed to initialize TypeORM:', error);
         process.exit(1);
     });
+
+
 
 // Note: We're already creating a Socket.IO server in SocketIoService
 // No need to create another one here

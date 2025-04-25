@@ -23,6 +23,7 @@ export class SocketIoService {
 
             // Handle user identification
             socket.on('identify', (userData) => {
+                console.log('User identified:', userData);
                 if (userData && userData.userId) {
                     socket.data.userId = userData.userId;
                     socket.data.role = userData.role || 'user';

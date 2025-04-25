@@ -7,6 +7,7 @@ export class ChatController {
     }
 
     initialize(socket) {
+
         socket.on('send_message', async ({ senderId, receiverId, content }) => {
             // Use senderId from the message payload or fallback to socket.data if available
             const userId = senderId || (socket.data && socket.data.userId);

@@ -1,0 +1,3 @@
+### Get Admin Message History
+GET http://localhost:3000/api/admin/messages
+Accept: application/json

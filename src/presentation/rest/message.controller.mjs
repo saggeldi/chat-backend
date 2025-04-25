@@ -8,12 +8,14 @@ export class MessageController {
         getMessageHistoryUseCase,
         deleteMessageUseCase,
         getUnreadMessageCountUseCase,
+        getAdminMessageHistoryUseCase,
         socketService = null
     ) {
         this.sendMessageUseCase = sendMessageUseCase;
         this.getMessageHistoryUseCase = getMessageHistoryUseCase;
         this.deleteMessageUseCase = deleteMessageUseCase;
         this.getUnreadMessageCountUseCase = getUnreadMessageCountUseCase;
+        this.getAdminMessageHistoryUseCase = getAdminMessageHistoryUseCase;
         this.socketService = socketService;
     }
 
@@ -181,6 +183,16 @@ export class MessageController {
         } catch (error) {
             console.error('Error sending file message:', error);
             return res.status(500).json({ error: 'Failed to send file message' });
+        }
+    }
+
+    async getAdminMessageHistory(req, res) {
+        try {
+            const adminMessageHistory = await this.getAdminMessageHistoryUseCase.execute();
+            return res.status(200).json(adminMessageHistory);
+        } catch (error) {
+            console.error('Error getting admin message history:', error);
+            return res.status(500).json({ error: 'Failed to get admin message history' });
         }
     }
 }

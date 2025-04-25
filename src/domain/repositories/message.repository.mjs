@@ -22,4 +22,12 @@ export class MessageRepository {
     async getUnreadMessageCount(userId) {
         throw new Error('Method not implemented');
     }
+
+    async getFullMessageHistoryByUserId(userId) {
+        throw new Error('Method not implemented');
+    }
+
+    async getAdminMessageHistory() {
+        throw new Error('Method not implemented');
+    }
 }

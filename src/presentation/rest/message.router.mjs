@@ -7,6 +7,7 @@ import { SendMessageUseCase } from '../../application/use-cases/send-message.use
 import { GetMessageHistoryUseCase } from '../../application/use-cases/get-message-history.use-case.mjs';
 import { DeleteMessageUseCase } from '../../application/use-cases/delete-message.use-case.mjs';
 import { GetUnreadMessageCountUseCase } from '../../application/use-cases/get-unread-message-count.use-case.mjs';
+import { GetAdminMessageHistoryUseCase } from '../../application/use-cases/get-admin-message-history.use-case.mjs';
 
 export function createMessageRouter(container, socketService = null) {
     const router = express.Router();
@@ -48,11 +49,16 @@ export function createMessageRouter(container, socketService = null) {
         container.messageRepository
     );
 
+    const getAdminMessageHistoryUseCase = new GetAdminMessageHistoryUseCase(
+        container.messageRepository
+    );
+
     const messageController = new MessageController(
         sendMessageUseCase,
         getMessageHistoryUseCase,
         deleteMessageUseCase,
         getUnreadMessageCountUseCase,
+        getAdminMessageHistoryUseCase,
         socketService
     );
 
@@ -70,6 +76,9 @@ export function createMessageRouter(container, socketService = null) {
 
     // Delete a message
     router.delete('/messages/:messageId', (req, res) => messageController.deleteMessage(req, res));
+
+    // Get admin message history
+    router.get('/admin/messages', (req, res) => messageController.getAdminMessageHistory(req, res));
 
     return router;
 }

@@ -439,7 +439,7 @@
 </head>
 <body>
 <div class="container">
-    <h1>Чат</h1> <!-- Translated -->
+    <h1 id="title">Чат</h1> <!-- Translated -->
 
     <div class="chat-container">
         <div class="chat-messages" id="messages">
@@ -494,6 +494,7 @@
     }
 
     // DOM Elements
+    const title = document.getElementById('title');
     const messageInput = document.getElementById('message-input');
     const sendButton = document.getElementById('send-button');
     const messagesContainer = document.getElementById('messages');
@@ -503,12 +504,17 @@
 
     // Set sender and receiver IDs from URL query parameters if available
     const senderIdFromUrl = getQueryParam('room_id');
+    const fullName = getQueryParam('fullName');
     const receiverIdFromUrl = getQueryParam('receiverId')??"-1";
     const isDarkFromUrl = getQueryParam('theme'); // Get dark mode param
 
     // Apply dark mode class based on URL param (redundant if head script works, but safe)
     if (isDarkFromUrl === 'dark' || isDarkFromUrl === 'true') {
         document.body.classList.add('dark-mode');
+    }
+
+    if(fullName) {
+        title.innerHTML = fullName;
     }
 
     // Socket.IO connection setup
@@ -826,8 +832,8 @@
                 })
                 .then(data => {
                     console.log('Файл успешно отправлен через API:', data); // Translated
-                    // The server should emit 'new_message' or 'message_sent' via Socket.IO
-                    // which will trigger displayMessage and scrolling.
+                    // Display the message in the chat immediately
+                    displayMessage(data, true); // true = sent
                 })
                 .catch(error => {
                     console.error('Ошибка отправки файла:', error); // Translated
