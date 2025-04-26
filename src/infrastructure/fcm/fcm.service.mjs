@@ -32,7 +32,11 @@ export class FirebaseFCMService {
                     }
                 })
             );
-            await Promise.all(notifications);
+            try {
+                await Promise.all(notifications);
+            } catch (error) {
+                console.error('Error sending push notification:', error);
+            }
             return;
         }
 
