@@ -30,4 +30,8 @@ export class MessageRepository {
     async getAdminMessageHistory() {
         throw new Error('Method not implemented');
     }
+
+    async getUnreadMessageCountByUserId(userId, senderId) {
+        throw new Error('Method not implemented');
+    }
 }

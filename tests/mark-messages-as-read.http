@@ -1,0 +1,26 @@
+### Mark messages from admin1 to user1 as read
+POST http://localhost:3000/api/messages/read
+Content-Type: application/json
+
+{
+  "receiverId": "7",
+  "senderId": "-1"
+}
+
+### Mark messages from user1 to admin1 as read
+POST http://localhost:3000/api/messages/read
+Content-Type: application/json
+
+{
+  "receiverId": "-1",
+  "senderId": "7"
+}
+
+### Mark messages between two regular users as read
+POST http://localhost:3000/api/messages/read
+Content-Type: application/json
+
+{
+  "receiverId": "7",
+  "senderId": "8"
+}

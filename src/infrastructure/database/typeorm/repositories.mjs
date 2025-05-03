@@ -190,6 +190,22 @@ export class TypeORMMessageRepository extends MessageRepository {
         }
     }
 
+    async getUnreadMessageCountByUserId(userId, senderId) {
+        if (this.repository) {
+            // Use TypeORM to count unread messages from a specific sender
+            return this.repository.count({
+                where: { receiverId: userId, senderId: senderId, read: false }
+            });
+        } else {
+            // Fallback to in-memory array if repository is not initialized
+            return this.messages.filter(message => 
+                message.receiverId === userId && 
+                message.senderId === senderId && 
+                !message.read
+            ).length;
+        }
+    }
+
     async getAdminMessageHistory() {
         // Create an instance of the user repository to get user info
         const userRepository = new TypeORMUserRepository();

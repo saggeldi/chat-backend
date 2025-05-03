@@ -9,13 +9,17 @@ export class MessageController {
         deleteMessageUseCase,
         getUnreadMessageCountUseCase,
         getAdminMessageHistoryUseCase,
-        socketService = null
+        socketService = null,
+        getUnreadMessageCountByUserIdUseCase = null,
+        markMessagesAsReadUseCase = null
     ) {
         this.sendMessageUseCase = sendMessageUseCase;
         this.getMessageHistoryUseCase = getMessageHistoryUseCase;
         this.deleteMessageUseCase = deleteMessageUseCase;
         this.getUnreadMessageCountUseCase = getUnreadMessageCountUseCase;
         this.getAdminMessageHistoryUseCase = getAdminMessageHistoryUseCase;
+        this.getUnreadMessageCountByUserIdUseCase = getUnreadMessageCountByUserIdUseCase;
+        this.markMessagesAsReadUseCase = markMessagesAsReadUseCase;
         this.socketService = socketService;
     }
 
@@ -193,6 +197,52 @@ export class MessageController {
         } catch (error) {
             console.error('Error getting admin message history:', error);
             return res.status(500).json({ error: 'Failed to get admin message history' });
+        }
+    }
+
+    async getUnreadMessageCountByUserId(req, res) {
+        try {
+            const { userId, senderId } = req.params;
+
+            if (!userId || !senderId) {
+                return res.status(400).json({ error: 'Missing required parameters' });
+            }
+
+            if (!this.getUnreadMessageCountByUserIdUseCase) {
+                return res.status(501).json({ error: 'This feature is not implemented yet' });
+            }
+
+            const count = await this.getUnreadMessageCountByUserIdUseCase.execute(userId, senderId);
+
+            return res.status(200).json({ count });
+        } catch (error) {
+            console.error('Error getting unread message count by user ID:', error);
+            return res.status(500).json({ error: 'Failed to get unread message count by user ID' });
+        }
+    }
+
+    async markMessagesAsRead(req, res) {
+        try {
+            const { receiverId, senderId } = req.body;
+
+            if (!receiverId || !senderId) {
+                return res.status(400).json({ error: 'Missing required parameters: receiverId and senderId' });
+            }
+
+            if (!this.markMessagesAsReadUseCase) {
+                return res.status(501).json({ error: 'This feature is not implemented yet' });
+            }
+
+            const success = await this.markMessagesAsReadUseCase.execute(receiverId, senderId);
+
+            if (success) {
+                return res.status(200).json({ message: 'Messages marked as read successfully' });
+            } else {
+                return res.status(500).json({ error: 'Failed to mark messages as read' });
+            }
+        } catch (error) {
+            console.error('Error marking messages as read:', error);
+            return res.status(500).json({ error: 'Failed to mark messages as read' });
         }
     }
 }
