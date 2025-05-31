@@ -11,5 +11,5 @@ GET http://localhost:3000/api/messages/unread/-1/7
 Accept: application/json
 
 ### Get unread message count for user1 from admin1
-GET http://localhost:3000/api/messages/unread/7/-1
+GET https://chat.balary.net/api/messages/unread/7/-1
 Accept: application/json

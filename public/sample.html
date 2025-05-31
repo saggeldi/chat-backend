@@ -548,6 +548,17 @@
             return;
         }
 
+        fetch(`/api/messages/read`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                receiverId: otherUserId,
+                senderId: userId
+            })
+        })
+
         messagesContainer.innerHTML = '<div style="text-align: center; color: var(--text-color-secondary); padding: 1rem;">Загрузка истории...</div>'; // Translated Loading indicator
 
         fetch(`/api/messages/${userId}/${otherUserId}`) // Ensure endpoint is correct
@@ -697,6 +708,7 @@
             const currentReceiverId = receiverIdFromUrl;
             if (currentSenderId && currentReceiverId) {
                 fetchMessageHistory(currentSenderId, currentReceiverId);
+
             } else if (currentSenderId && !currentReceiverId) {
                 messagesContainer.innerHTML = '<div style="text-align: center; color: var(--text-color-secondary); padding: 1rem;">Введите ID получателя в URL для загрузки истории и отправки сообщений.</div>'; // Translated
             } else if (!currentSenderId && currentReceiverId) {
