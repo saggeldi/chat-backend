@@ -16,7 +16,19 @@ export class FirebaseFCMService {
                 notification: {
                     title: message.title,
                     body: message.body
-                }
+                },
+                data: {
+                    externalUrl: "",
+                    id: "",
+                    type: "chat"
+                },
+                apns: {
+                    payload: {
+                        aps: {
+                            badge: 1,
+                        },
+                    },
+                },
             });
             return;
         }
@@ -29,7 +41,19 @@ export class FirebaseFCMService {
                     notification: {
                         title: message.title,
                         body: message.body
-                    }
+                    },
+                    data: {
+                        externalUrl: "",
+                        id: "",
+                        type: "chat"
+                    },
+                    apns: {
+                        payload: {
+                            aps: {
+                                badge: 1,
+                            },
+                        },
+                    },
                 })
             );
             try {
@@ -53,7 +77,19 @@ export class FirebaseFCMService {
                             notification: {
                                 title: message.title,
                                 body: message.body
-                            }
+                            },
+                            data: {
+                                externalUrl: "",
+                                id: "",
+                                type: "chat"
+                            },
+                            apns: {
+                                payload: {
+                                    aps: {
+                                        badge: 1,
+                                    },
+                                },
+                            },
                         })
                     );
                     await Promise.all(notifications);
