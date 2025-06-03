@@ -19,7 +19,7 @@ export class FirebaseFCMService {
                 },
                 data: {
                     externalUrl: "",
-                    id: "0",
+                    id: "1",
                     type: "chat"
                 },
                 apns: {
@@ -44,7 +44,7 @@ export class FirebaseFCMService {
                     },
                     data: {
                         externalUrl: "",
-                        id: "0",
+                        id: "1",
                         type: "chat"
                     },
                     apns: {
@@ -80,7 +80,7 @@ export class FirebaseFCMService {
                             },
                             data: {
                                 externalUrl: "",
-                                id: "0",
+                                id: "1",
                                 type: "chat"
                             },
                             apns: {
