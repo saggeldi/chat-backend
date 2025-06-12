@@ -624,9 +624,12 @@
 
         const messageInfo = document.createElement('div');
         messageInfo.className = 'message-info';
+
         // Show 'Вы' for sent messages, senderId for received
-        const senderName = isSent ? 'Вы' : message.senderId; // Translated 'You'
-        const timeString = message.timestamp ? new Date(message.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : '';
+        const senderName = isSent ? 'Вы' : message.senderId;
+
+        // Enhanced human-readable date/time formatting
+        const timeString = message.timestamp ? formatHumanReadableTime(message.timestamp) : '';
         messageInfo.textContent = `${senderName} - ${timeString}`;
 
         const messageContent = document.createElement('div');
@@ -673,6 +676,48 @@
         // --- SCROLL TO BOTTOM ---
         // Scroll to the bottom whenever a message is displayed
         scrollToBottom();
+    }
+
+    // Helper function for human-readable time formatting
+    function formatHumanReadableTime(timestamp) {
+        const messageDate = new Date(timestamp);
+        const now = new Date();
+        const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+        const yesterday = new Date(today.getTime() - 24 * 60 * 60 * 1000);
+        const messageDay = new Date(messageDate.getFullYear(), messageDate.getMonth(), messageDate.getDate());
+
+        // Time part (hours and minutes)
+        const timeStr = messageDate.toLocaleTimeString([], {
+            hour: '2-digit',
+            minute: '2-digit'
+        });
+
+        // Determine date part
+        if (messageDay.getTime() === today.getTime()) {
+            // Today - just show time
+            return timeStr;
+        } else if (messageDay.getTime() === yesterday.getTime()) {
+            // Yesterday
+            return `вчера в ${timeStr}`;
+        } else if (now.getTime() - messageDate.getTime() < 7 * 24 * 60 * 60 * 1000) {
+            // This week - show day of week
+            const dayNames = ['воскресенье', 'понедельник', 'вторник', 'среда', 'четверг', 'пятница', 'суббота'];
+            const dayName = dayNames[messageDate.getDay()];
+            return `${dayName} в ${timeStr}`;
+        } else if (messageDate.getFullYear() === now.getFullYear()) {
+            // This year - show date without year
+            return messageDate.toLocaleDateString('ru-RU', {
+                day: 'numeric',
+                month: 'short'
+            }) + ` в ${timeStr}`;
+        } else {
+            // Different year - show full date
+            return messageDate.toLocaleDateString('ru-RU', {
+                day: 'numeric',
+                month: 'short',
+                year: 'numeric'
+            }) + ` в ${timeStr}`;
+        }
     }
 
     // Initialize chat with URL parameters if available
