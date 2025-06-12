@@ -626,7 +626,7 @@
         messageInfo.className = 'message-info';
 
         // Show 'Вы' for sent messages, senderId for received
-        const senderName = isSent ? 'Вы' : message.senderId;
+        const senderName = isSent ? 'Вы' : message.senderId == "-1"? 'Admin' : message.senderId;
 
         // Enhanced human-readable date/time formatting
         const timeString = message.timestamp ? formatHumanReadableTime(message.timestamp) : '';
